@@ -1,0 +1,44 @@
+name: Build and deploy to Azure Blob Storage (Static Website)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure Azure CLI available
+        run: az --version
+
+      - name: Upload static site to $web container
+        env:
+          STORAGE_ACCOUNT: ${{ secrets.STORAGE_ACCOUNT_NAME }}
+          RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
+        run: |
+          az account show --query id -o tsv
+          az storage blob upload-batch --account-name "$STORAGE_ACCOUNT" --source ./dist --destination '$web' --overwrite --auth-mode login
+
+# Required repository secrets:
+# - AZURE_CREDENTIALS (service principal JSON)
+# - STORAGE_ACCOUNT_NAME
+# - RESOURCE_GROUP
