@@ -1,115 +1,78 @@
 # NER API UI
 
-A React UI to test the Named Entity Recognition (NER) API deployed on Azure Container Apps.
+React + Vite UI for testing a Named Entity Recognition (NER) API.
 
-## Overview
+This repository contains a small React app that sends text to a remote NER API and displays highlighted entities.
 
-This application provides a user-friendly interface to test the NER API that identifies and extracts named entities (such as persons, organizations, locations, dates, etc.) from text.
+Live API endpoint used in development:
 
-**API Endpoint:** https://ner-api.lemonbay-b25f13cd.eastus.azurecontainerapps.io/ner
+- `https://ner-api.lemonbay-b25f13cd.eastus.azurecontainerapps.io/extract`
 
-**Backend Repository:** https://github.com/karthikeyanbss/MachineLearning
+Deployment options included in this repo:
 
-## Features
+- Azure Blob Storage (Static Website) — recommended for this static site. See the `azure/` scripts and the GitHub Actions workflow `.github/workflows/azure-blob-static-deploy.yml`.
+- (Removed) Docker/Container Apps workflow — this repo was switched to static blob hosting.
 
-- **Text Input**: Enter any text to analyze for named entities
-- **Real-time Analysis**: Send text to the NER API and get instant results
-- **Entity Highlighting**: Visual highlighting of detected entities in the original text
-- **Color-coded Labels**: Different colors for different entity types (PERSON, ORG, GPE, LOC, DATE, etc.)
-- **Entity List**: Detailed list of all detected entities with their types
-- **Responsive Design**: Works on desktop and mobile devices
-- **Dark/Light Mode**: Automatic theme switching based on system preferences
+## Quick start (development)
 
-## Getting Started
+Requirements:
 
-### Prerequisites
+- Node.js 18+ and npm
 
-- Node.js (v16 or higher)
-- npm or yarn
+Install and run locally:
 
-### Installation
-
-1. Clone the repository:
 ```bash
 git clone https://github.com/karthikeyanbss/MachineLearning-UI.git
 cd MachineLearning-UI
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start the development server:
-```bash
+npm ci
 npm run dev
 ```
 
-4. Open your browser and navigate to `http://localhost:5173` (or the URL shown in the terminal)
+Open `http://localhost:5173`.
 
-## Usage
+## Build and deploy to Azure Blob Storage (one-shot)
 
-1. Enter or paste text into the text area
-2. Click "Analyze Text" to send the text to the NER API
-3. View the results:
-   - Highlighted entities in the original text
-   - List of detected entities with their types
+Prerequisites:
 
-### Example Text
+- Azure CLI logged-in (via `az login`) and permissions to create resources or manage the target storage account.
 
-Try this sample text:
-```
-Apple Inc. is a technology company headquartered in Cupertino, California. It was founded by Steve Jobs, Steve Wozniak, and Ronald Wayne in 1976. Today, Apple is valued at over $2 trillion.
-```
-
-## Building for Production
-
-To create a production build:
+Using the provided script (Linux/macOS):
 
 ```bash
-npm run build
+./azure/create_storage_and_upload.sh <RESOURCE_GROUP> <LOCATION> <STORAGE_ACCOUNT_NAME> [SUBSCRIPTION_ID]
 ```
 
-The built files will be in the `dist` directory and can be deployed to any static hosting service.
+On Windows (PowerShell):
 
-## Preview Production Build
-
-To preview the production build locally:
-
-```bash
-npm run preview
+```powershell
+.\azure\create_storage_and_upload.ps1 -ResourceGroup my-rg -Location eastus -StorageAccountName mystorageacct
 ```
 
-## API Format
+CI/CD: push to `main` will trigger `.github/workflows/azure-blob-static-deploy.yml` which builds the site and uploads `./dist` to the storage account's `$web` container. Set these repo secrets:
 
-The NER API expects a POST request with JSON body:
+- `AZURE_CREDENTIALS` (from `az ad sp create-for-rbac --sdk-auth`)
+- `STORAGE_ACCOUNT_NAME`
+- `RESOURCE_GROUP`
+
+## API format
+
+Single text POST to `/extract` with body:
+
 ```json
-{
-  "text": "Your text here"
-}
+{ "text": "Your text here" }
 ```
 
-And returns:
+Batch texts POST to `/extract/batch` with body:
+
 ```json
-{
-  "entities": [
-    {
-      "text": "entity text",
-      "label": "ENTITY_TYPE",
-      "start": 0,
-      "end": 11
-    }
-  ]
-}
+{ "texts": ["first text", "second text"] }
 ```
 
-## Technologies Used
+## Notes
 
-- **React** - UI framework
-- **Vite** - Build tool and dev server
-- **JavaScript (ES6+)** - Programming language
-- **CSS3** - Styling
+- The repo includes `azure/` scripts for creating storage and uploading the built files.
+- Docker and Container Apps CI were removed in favor of static blob hosting.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT
