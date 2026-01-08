@@ -35,6 +35,8 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .toggle-label {
@@ -62,6 +64,22 @@ main {
   border-radius: 4px;
   font-size: 0.85em;
   font-weight: 600;
+}
+
+.demo-text-button {
+  padding: 0.5em 1em;
+  font-size: 0.95em;
+  border-radius: 6px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: 500;
+}
+
+.demo-text-button:hover {
+  background-color: #45a049;
 }
 
 .input-form {
